@@ -1,0 +1,9 @@
+# Switch A base config (optional)
+
+hostname SwitchA
+
+! Optional VLAN setup
+! vlan 10
+! name BRANCH_A_LAN
+
+! Default: access ports in VLAN 1

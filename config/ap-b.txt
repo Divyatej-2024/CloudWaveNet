@@ -1,0 +1,6 @@
+# Wireless AP B config (GUI in Packet Tracer)
+
+SSID: CompanyB-Secure
+Security: WPA2-PSK
+Passphrase: StrongPassword123!
+IP: DHCP from Router B (or static if desired)

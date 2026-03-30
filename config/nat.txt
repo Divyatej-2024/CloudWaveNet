@@ -1,0 +1,6 @@
+# NAT reference (already included in router configs)
+
+access-list 1 permit 192.168.10.0 0.0.0.255
+access-list 1 permit 192.168.20.0 0.0.0.255
+
+ip nat inside source list 1 interface Serial0/0/0 overload

@@ -1,0 +1,4 @@
+# ACL for interesting VPN traffic (define on both routers)
+
+ip access-list extended VPN-TRAFFIC
+ permit ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255

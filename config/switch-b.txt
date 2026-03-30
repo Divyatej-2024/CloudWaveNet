@@ -1,0 +1,9 @@
+# Switch B base config (optional)
+
+hostname SwitchB
+
+! Optional VLAN setup
+! vlan 20
+! name BRANCH_B_LAN
+
+! Default: access ports in VLAN 1
