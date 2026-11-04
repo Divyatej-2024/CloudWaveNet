@@ -6,12 +6,18 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "cloudwavenet-vpc" }
+
+  tags = {
+    Name = "cloudwavenet-vpc"
+  }
 }
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
-  tags   = { Name = "cloudwavenet-igw" }
+
+  tags = {
+    Name = "cloudwavenet-igw"
+  }
 }
 
 resource "aws_subnet" "public" {
@@ -19,6 +25,7 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnet_cidr
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = false
+
   tags = {
     Name = "cloudwavenet-public"
     Tier = "public"
@@ -29,6 +36,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.private_subnet_cidr
   availability_zone = data.aws_availability_zones.available.names[0]
+
   tags = {
     Name = "cloudwavenet-private"
     Tier = "private"
@@ -37,11 +45,15 @@ resource "aws_subnet" "private" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
-  tags = { Name = "cloudwavenet-public-rt" }
+
+  tags = {
+    Name = "cloudwavenet-public-rt"
+  }
 }
 
 resource "aws_route_table_association" "public" {
@@ -51,7 +63,10 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-  tags   = { Name = "cloudwavenet-private-rt" }
+
+  tags = {
+    Name = "cloudwavenet-private-rt"
+  }
 }
 
 resource "aws_route_table_association" "private" {
@@ -63,6 +78,7 @@ resource "aws_security_group" "baseline" {
   name        = "cloudwavenet-baseline"
   description = "No unsolicited inbound traffic; add narrowly scoped rules per workload."
   vpc_id      = aws_vpc.main.id
+
   egress {
     description = "Default outbound access; tighten for deployed workloads."
     from_port   = 0
@@ -70,7 +86,10 @@ resource "aws_security_group" "baseline" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = { Name = "cloudwavenet-baseline" }
+
+  tags = {
+    Name = "cloudwavenet-baseline"
+  }
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow" {
@@ -82,6 +101,7 @@ data "aws_iam_policy_document" "flow_logs_assume_role" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
+
     principals {
       type        = "Service"
       identifiers = ["vpc-flow-logs.amazonaws.com"]
@@ -125,7 +145,10 @@ resource "aws_flow_log" "vpc" {
 resource "aws_vpn_gateway" "main" {
   count  = var.customer_gateway_ip == null ? 0 : 1
   vpc_id = aws_vpc.main.id
-  tags   = { Name = "cloudwavenet-vgw" }
+
+  tags = {
+    Name = "cloudwavenet-vgw"
+  }
 }
 
 resource "aws_customer_gateway" "branch" {
@@ -133,7 +156,10 @@ resource "aws_customer_gateway" "branch" {
   bgp_asn    = var.customer_gateway_bgp_asn
   ip_address = var.customer_gateway_ip
   type       = "ipsec.1"
-  tags       = { Name = "cloudwavenet-customer-gateway" }
+
+  tags = {
+    Name = "cloudwavenet-customer-gateway"
+  }
 }
 
 resource "aws_vpn_connection" "branch" {
@@ -142,5 +168,14 @@ resource "aws_vpn_connection" "branch" {
   vpn_gateway_id      = aws_vpn_gateway.main[0].id
   type                = "ipsec.1"
   static_routes_only  = false
-  tags                = { Name = "cloudwavenet-site-to-site-vpn" }
+
+  tags = {
+    Name = "cloudwavenet-site-to-site-vpn"
+  }
+}
+
+resource "aws_vpn_gateway_route_propagation" "private" {
+  count          = var.customer_gateway_ip == null ? 0 : 1
+  vpn_gateway_id = aws_vpn_gateway.main[0].id
+  route_table_id = aws_route_table.private.id
 }
