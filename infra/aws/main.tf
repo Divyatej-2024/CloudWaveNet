@@ -1,3 +1,51 @@
+locals {
+  # Convert the first and last addresses of each IPv4 CIDR to integers so
+  # subnet containment and overlap can be checked before AWS resources are created.
+  vpc_first = sum([
+    for index, octet in split(".", cidrhost(var.vpc_cidr, 0)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+  vpc_last = sum([
+    for index, octet in split(".", cidrhost(var.vpc_cidr, -1)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+
+  public_first = sum([
+    for index, octet in split(".", cidrhost(var.public_subnet_cidr, 0)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+  public_last = sum([
+    for index, octet in split(".", cidrhost(var.public_subnet_cidr, -1)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+
+  private_first = sum([
+    for index, octet in split(".", cidrhost(var.private_subnet_cidr, 0)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+  private_last = sum([
+    for index, octet in split(".", cidrhost(var.private_subnet_cidr, -1)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+
+  branch_a_first = sum([
+    for index, octet in split(".", cidrhost("192.168.10.0/24", 0)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+  branch_a_last = sum([
+    for index, octet in split(".", cidrhost("192.168.10.0/24", -1)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+  branch_b_first = sum([
+    for index, octet in split(".", cidrhost("192.168.20.0/24", 0)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+  branch_b_last = sum([
+    for index, octet in split(".", cidrhost("192.168.20.0/24", -1)) :
+    tonumber(octet) * pow(256, 3 - index)
+  ])
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }

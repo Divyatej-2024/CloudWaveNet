@@ -2,12 +2,22 @@ variable "aws_region" {
   description = "AWS region for the lab deployment."
   type        = string
   default     = "eu-west-2"
+
+  validation {
+    condition     = can(regex("^[a-z]{2}(-[a-z]+)+-[0-9]+$", var.aws_region))
+    error_message = "aws_region must use an AWS region identifier such as eu-west-2."
+  }
 }
 
 variable "environment" {
   description = "Resource environment tag."
   type        = string
   default     = "lab"
+
+  validation {
+    condition     = length(trimspace(var.environment)) > 0 && length(var.environment) <= 32
+    error_message = "environment must contain between 1 and 32 non-whitespace characters."
+  }
 }
 
 variable "project_name" {
@@ -27,8 +37,8 @@ variable "vpc_cidr" {
   default     = "10.40.0.0/16"
 
   validation {
-    condition     = can(cidrhost(var.vpc_cidr, 0))
-    error_message = "vpc_cidr must be a valid IPv4 CIDR."
+    condition     = can(cidrhost(var.vpc_cidr, 0)) && can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", var.vpc_cidr)) && try(tonumber(split("/", var.vpc_cidr)[1]), 0) >= 16 && try(tonumber(split("/", var.vpc_cidr)[1]), 0) <= 28
+    error_message = "vpc_cidr must be a valid IPv4 CIDR with a prefix between /16 and /28 (AWS VPC limits)."
   }
 }
 
@@ -38,8 +48,8 @@ variable "public_subnet_cidr" {
   default     = "10.40.1.0/24"
 
   validation {
-    condition     = can(cidrhost(var.public_subnet_cidr, 0))
-    error_message = "public_subnet_cidr must be a valid IPv4 CIDR."
+    condition     = can(cidrhost(var.public_subnet_cidr, 0)) && can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", var.public_subnet_cidr)) && try(tonumber(split("/", var.public_subnet_cidr)[1]), 0) >= 16 && try(tonumber(split("/", var.public_subnet_cidr)[1]), 0) <= 28
+    error_message = "public_subnet_cidr must be a valid IPv4 CIDR with a prefix between /16 and /28 (AWS subnet limits)."
   }
 }
 
@@ -49,8 +59,8 @@ variable "private_subnet_cidr" {
   default     = "10.40.11.0/24"
 
   validation {
-    condition     = can(cidrhost(var.private_subnet_cidr, 0)) && var.private_subnet_cidr != var.public_subnet_cidr
-    error_message = "private_subnet_cidr must be a valid IPv4 CIDR distinct from public_subnet_cidr."
+    condition     = can(cidrhost(var.private_subnet_cidr, 0)) && can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", var.private_subnet_cidr)) && try(tonumber(split("/", var.private_subnet_cidr)[1]), 0) >= 16 && try(tonumber(split("/", var.private_subnet_cidr)[1]), 0) <= 28 && var.private_subnet_cidr != var.public_subnet_cidr
+    error_message = "private_subnet_cidr must be a valid IPv4 CIDR with a prefix between /16 and /28, distinct from public_subnet_cidr."
   }
 }
 
