@@ -35,3 +35,11 @@ jobs:
         run: terraform init -backend=false
       - name: Validate configuration
         run: terraform validate
+      - name: Scan Terraform configuration for critical misconfigurations
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: infra/aws
+          severity: CRITICAL
+          exit-code: "1"
+          format: table
