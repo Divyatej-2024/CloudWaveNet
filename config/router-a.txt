@@ -1,34 +1,30 @@
-# Router A sample config (update interface names)
-
+! Branch A router template. Confirm interface names for selected device.
 hostname RouterA
-
-! LAN interface
+!
 interface GigabitEthernet0/0
+ description BRANCH_A_LAN
  ip address 192.168.10.1 255.255.255.0
+ ip nat inside
  no shutdown
-
-! WAN interface
+!
 interface Serial0/0/0
- ip address 100.1.1.1 255.255.255.252
- clock rate 64000
+ description SIMULATED_ISP_WAN
+ ip address 198.51.100.1 255.255.255.252
+ ip nat outside
  no shutdown
-
-! DHCP
+!
 ip dhcp excluded-address 192.168.10.1 192.168.10.20
 ip dhcp pool BRANCH_A
  network 192.168.10.0 255.255.255.0
  default-router 192.168.10.1
- dns-server 8.8.8.8
-
-! NAT
-access-list 1 permit 192.168.10.0 0.0.0.255
-ip nat inside source list 1 interface Serial0/0/0 overload
-interface GigabitEthernet0/0
- ip nat inside
-interface Serial0/0/0
- ip nat outside
-
-! Routing
-ip route 0.0.0.0 0.0.0.0 100.1.1.2
-
-! VPN (see acl and crypto map files)
+ dns-server 1.1.1.1
+!
+! Exempt branch-to-branch traffic from PAT.
+ip access-list extended NAT-BRANCH-A
+ deny ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+ permit ip 192.168.10.0 0.0.0.255 any
+!
+ip nat inside source list NAT-BRANCH-A interface Serial0/0/0 overload
+ip route 0.0.0.0 0.0.0.0 198.51.100.2
+!
+! Configure supported IPsec commands from config/ipsec-template.txt.
