@@ -69,7 +69,7 @@ Destroy only disposable lab resources after checking the active workspace.
 
 ## Validation
 
-GitHub Actions checks Terraform formatting and validation. This does not deploy AWS or prove connectivity. End-to-end tests require the actual Packet Tracer file, compatible edge equipment, AWS account and recorded evidence.
+GitHub Actions checks Terraform formatting and validation and runs a Trivy configuration scan for critical misconfigurations. Terraform preconditions also reject subnet ranges outside the VPC, overlapping public/private subnets, and VPC ranges overlapping either simulated branch LAN. AWS VPC and subnet prefix sizes are checked against AWS limits. These checks do not deploy AWS or prove connectivity. End-to-end tests require the actual Packet Tracer file, compatible edge equipment, AWS account and recorded evidence.
 
 See docs/testing-plan.md, docs/hybrid-cloud-architecture.md and docs/security-analysis.md.
 
