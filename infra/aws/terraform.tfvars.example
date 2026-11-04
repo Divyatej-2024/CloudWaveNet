@@ -1,0 +1,8 @@
+aws_region             = "eu-west-2"
+environment            = "lab"
+project_name           = "cloudwavenet"
+vpc_cidr               = "10.40.0.0/16"
+public_subnet_cidr     = "10.40.1.0/24"
+private_subnet_cidr    = "10.40.11.0/24"
+customer_gateway_ip    = null
+customer_gateway_bgp_asn = 65010

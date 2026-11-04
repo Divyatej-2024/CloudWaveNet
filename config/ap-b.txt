@@ -1,6 +1,6 @@
-# Wireless AP B config (GUI in Packet Tracer)
-
+# Branch B access point (configure in Packet Tracer GUI)
 SSID: CompanyB-Secure
-Security: WPA2-PSK
-Passphrase: StrongPassword123!
-IP: DHCP from Router B (or static if desired)
+Security: WPA2-PSK (use WPA3 if supported)
+Passphrase: <SET_A_DIFFERENT_UNIQUE_LOCAL_LAB_SECRET>
+IP: DHCP reservation or static management address in Branch B LAN
+# Do not commit a real passphrase.

@@ -1,18 +1,17 @@
-# Cloud Internet Configuration
+# Packet Tracer simulated ISP
 
-## Cloud Object
-- Use Cloud in Custom mode
-- Enable Serial + Ethernet + DSL interfaces (as needed)
+This describes the Packet Tracer Cloud/ISP lab only. It is not an AWS configuration.
 
-## IP Plan
-- A<->Cloud: 100.1.1.0/30
-- Cloud<->B: 100.1.1.4/30
+WAN links:
+- Branch A–ISP: 198.51.100.0/30 (Router A .1, ISP .2)
+- Branch B–ISP: 203.0.113.0/30 (Router B .1, ISP .2)
 
-## Cloud Routing
-Add static routes in the Cloud to direct LAN traffic:
-- 192.168.10.0/24 via 100.1.1.1
-- 192.168.20.0/24 via 100.1.1.5
+Router default routes:
+- Router A: 0.0.0.0/0 via 198.51.100.2
+- Router B: 0.0.0.0/0 via 203.0.113.2
 
-## Router Default Routes
-- Router A: default route to 100.1.1.2
-- Router B: default route to 100.1.1.6
+ISP routes:
+- 192.168.10.0/24 via 198.51.100.1
+- 192.168.20.0/24 via 203.0.113.1
+
+Confirm the selected Packet Tracer Cloud/router supports route configuration. These are documentation-only address blocks, not real public WAN addresses.

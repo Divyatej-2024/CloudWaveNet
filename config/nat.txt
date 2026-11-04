@@ -1,6 +1,10 @@
-# NAT reference (already included in router configs)
-
-access-list 1 permit 192.168.10.0 0.0.0.255
-access-list 1 permit 192.168.20.0 0.0.0.255
-
-ip nat inside source list 1 interface Serial0/0/0 overload
+! NAT exemption reference; use the extended ACLs in each router template.
+! Branch A:
+ip access-list extended NAT-BRANCH-A
+ deny ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+ permit ip 192.168.10.0 0.0.0.255 any
+! Branch B:
+ip access-list extended NAT-BRANCH-B
+ deny ip 192.168.20.0 0.0.0.255 192.168.10.0 0.0.0.255
+ permit ip 192.168.20.0 0.0.0.255 any
+! Apply each ACL to ip nat inside source list ... interface <WAN> overload.

@@ -1,20 +1,27 @@
-# IPsec policy and crypto map template
-
+! Educational Packet Tracer template. Check IOS/device support before use.
+! Substitute a unique disposable lab key locally; never commit real secrets.
 crypto isakmp policy 10
- encryption aes
+ encryption aes 256
+ hash sha256
  authentication pre-share
- group 2
- lifetime 86400
-
-crypto isakmp key MyComplexKey123 address 100.1.1.5
-
-crypto ipsec transform-set TRANS1 esp-aes esp-sha-hmac
-
-crypto map VPN-MAP 10 ipsec-isakmp
- set peer 100.1.1.5
- set transform-set TRANS1
+ group 14
+ lifetime 28800
+!
+crypto isakmp key <LOCAL_LAB_ONLY_SECRET> address <REMOTE_WAN_PEER>
+!
+crypto ipsec transform-set CWN-SET esp-aes 256 esp-sha-hmac
+ mode tunnel
+!
+ip access-list extended VPN-TRAFFIC
+ permit ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+!
+crypto map CWN-MAP 10 ipsec-isakmp
+ set peer <REMOTE_WAN_PEER>
+ set transform-set CWN-SET
  match address VPN-TRAFFIC
-
-! Apply to WAN interface
-interface Serial0/0/0
- crypto map VPN-MAP
+!
+interface <WAN_INTERFACE>
+ crypto map CWN-MAP
+!
+! Mirror the traffic selector on Router B and use the opposite peer.
+! Packet Tracer IOS support varies; this is not an AWS VPN device configuration.

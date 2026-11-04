@@ -1,15 +1,13 @@
-# VPN Step-by-Step (IPsec Site-to-Site)
+# VPN step-by-step
 
-## Phase 1 (ISAKMP)
-1. Enable ISAKMP policy (aes, pre-share, group 2, lifetime 86400)
-2. Set pre-shared key for the peer
+For the Packet Tracer educational lab, see /docs/vpn.md. Device support varies; use only commands supported by the selected IOS image.
 
-## Phase 2 (IPsec)
-1. Create transform set (esp-aes, esp-sha-hmac)
-2. Define interesting traffic ACL (LAN A <-> LAN B)
-3. Create and apply crypto map to WAN interface
+1. Confirm WAN peer reachability.
+2. Configure matching IKE policy and a unique local lab-only pre-shared key on both peers.
+3. Configure matching IPsec transform settings.
+4. Define mirrored interesting-traffic ACLs for both branch LANs.
+5. Exclude branch-to-branch traffic from NAT.
+6. Apply crypto map to the correct WAN interface.
+7. Generate branch traffic and inspect supported IKE/IPsec SA counters.
 
-## Verification
-- show crypto isakmp sa
-- show crypto ipsec sa
-Expect QM_IDLE and increasing counters
+For AWS, enable optional VPN resources only with a real static customer-gateway IP. Download and apply the AWS vendor-specific configuration. Packet Tracer's Cloud object is not an AWS VPN endpoint.
