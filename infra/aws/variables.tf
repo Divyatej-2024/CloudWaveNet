@@ -37,7 +37,7 @@ variable "vpc_cidr" {
   default     = "10.40.0.0/16"
 
   validation {
-    condition     = can(cidrhost(var.vpc_cidr, 0)) && tonumber(split("/", var.vpc_cidr)[1]) >= 16 && tonumber(split("/", var.vpc_cidr)[1]) <= 28
+    condition     = can(cidrhost(var.vpc_cidr, 0)) && try(tonumber(split("/", var.vpc_cidr)[1]), 0) >= 16 && try(tonumber(split("/", var.vpc_cidr)[1]), 0) <= 28
     error_message = "vpc_cidr must be a valid IPv4 CIDR with a prefix between /16 and /28 (AWS VPC limits)."
   }
 }
@@ -48,7 +48,7 @@ variable "public_subnet_cidr" {
   default     = "10.40.1.0/24"
 
   validation {
-    condition     = can(cidrhost(var.public_subnet_cidr, 0)) && tonumber(split("/", var.public_subnet_cidr)[1]) >= 16 && tonumber(split("/", var.public_subnet_cidr)[1]) <= 28
+    condition     = can(cidrhost(var.public_subnet_cidr, 0)) && try(tonumber(split("/", var.public_subnet_cidr)[1]), 0) >= 16 && try(tonumber(split("/", var.public_subnet_cidr)[1]), 0) <= 28
     error_message = "public_subnet_cidr must be a valid IPv4 CIDR with a prefix between /16 and /28 (AWS subnet limits)."
   }
 }
@@ -59,7 +59,7 @@ variable "private_subnet_cidr" {
   default     = "10.40.11.0/24"
 
   validation {
-    condition     = can(cidrhost(var.private_subnet_cidr, 0)) && tonumber(split("/", var.private_subnet_cidr)[1]) >= 16 && tonumber(split("/", var.private_subnet_cidr)[1]) <= 28 && var.private_subnet_cidr != var.public_subnet_cidr
+    condition     = can(cidrhost(var.private_subnet_cidr, 0)) && try(tonumber(split("/", var.private_subnet_cidr)[1]), 0) >= 16 && try(tonumber(split("/", var.private_subnet_cidr)[1]), 0) <= 28 && var.private_subnet_cidr != var.public_subnet_cidr
     error_message = "private_subnet_cidr must be a valid IPv4 CIDR with a prefix between /16 and /28, distinct from public_subnet_cidr."
   }
 }
