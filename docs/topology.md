@@ -1,29 +1,45 @@
-# Topology Design
+# Packet Tracer topology and addressing
 
-## Overview
-Two branches (A and B) connect to a simulated Internet cloud. Each branch has:
-- Router
-- Switch
-- Wireless AP
-- Wired and wireless clients
+## Scope
 
-## Logical View
-Branch A LAN: 192.168.10.0/24, gateway 192.168.10.1
-Branch B LAN: 192.168.20.0/24, gateway 192.168.20.1
+This is the simulation network. The simulated ISP Cloud is a Packet Tracer object, not an AWS service.
 
-WAN links:
-- Router A <-> Cloud: 100.1.1.0/30
-  - Router A: 100.1.1.1
-  - Cloud: 100.1.1.2
-- Cloud <-> Router B: 100.1.1.4/30
-  - Cloud: 100.1.1.6
-  - Router B: 100.1.1.5
+## Branch LANs
 
-## Physical Devices
-- Router A, Switch A, Wireless AP A
-- Router B, Switch B, Wireless AP B
-- Cloud (Custom mode) with serial/ethernet/DSL ports
+| Segment | Network | Gateway |
+|---|---|---|
+| Branch A users | 192.168.10.0/24 | 192.168.10.1 |
+| Branch B users | 192.168.20.0/24 | 192.168.20.1 |
 
-## Notes
-- Static routing recommended for Packet Tracer simplicity.
-- OSPF can be used if desired (not required).
+## WAN point-to-point links
+
+Use RFC 5737 documentation-only ranges in the lab. They are not Internet-routable.
+
+| Link | Network | Router | ISP cloud |
+|---|---|---|---|
+| Branch A–ISP | 198.51.100.0/30 | Router A: 198.51.100.1 | 198.51.100.2 |
+| Branch B–ISP | 203.0.113.0/30 | Router B: 203.0.113.1 | 203.0.113.2 |
+
+Router A default route: 0.0.0.0/0 via 198.51.100.2.
+Router B default route: 0.0.0.0/0 via 203.0.113.2.
+
+The simulated ISP needs routes for 192.168.10.0/24 via 198.51.100.1 and 192.168.20.0/24 via 203.0.113.1. Confirm how the selected Packet Tracer Cloud/router implements routes.
+
+## Logical layout
+
+```text
+Branch A clients -- Switch A -- Router A ----                                               Simulated ISP
+Branch B clients -- Switch B -- Router B ----/       |
+                                                      | separate real-world design
+                                                AWS Site-to-Site VPN
+                                                      |
+                                                AWS Virtual Private Gateway
+                                                      |
+                                                    AWS VPC
+```
+
+The AWS link is an architectural target, not a Packet Tracer-supported direct connection. A real customer-gateway appliance with a public IP and supported IPsec/BGP is required.
+
+## VLAN expansion
+
+Current router templates retain one untagged LAN per branch. Department VLANs are a planned extension. Add router subinterfaces, switch trunks and access-port assignments together; do not enable tagging on one side only.

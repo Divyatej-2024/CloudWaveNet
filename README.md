@@ -1,199 +1,85 @@
-🌐 CloudWaveNET
-Secure Wireless Branch-to-Branch Communication via Cloud Internet (Packet Tracer Project)
+# CloudWaveNET
 
-CloudWaveNET is a fully simulated enterprise networking project built in Cisco Packet Tracer.
-It demonstrates how two branch offices communicate through a cloud-based Internet, supported by wireless access, routing, NAT, and IPsec VPN encryption.
+**Hybrid enterprise networking and cloud security lab**
 
-This project is designed as a portfolio-ready, industry-level networking scenario for cybersecurity and networking students.
+CloudWaveNET demonstrates secure connectivity between two simulated branch offices and an AWS VPC. Packet Tracer models branch routing and a simulated ISP; Terraform provisions the cloud-side network and observability foundation.
 
-📌 Project Features
+> **Scope:** These are configuration templates and infrastructure definitions. A working Packet Tracer topology, live AWS deployment, VPN tunnel, and test pass must not be claimed until the artefact is supplied and tests are run. Packet Tracer's simulated Cloud object is not an AWS VPN endpoint.
 
-✔ Wireless LAN for both branches
-✔ Cloud Internet simulation
-✔ Static routing or OSPF (optional)
-✔ NAT overload for internet access
-✔ Secure IPsec Site-to-Site VPN tunnel
-✔ DHCP for wireless clients
-✔ Network topology diagrams
-✔ Professional documentation & configs included
+## Architecture
 
-🏗️ Project Architecture
-   Branch A ─────────┐
-                     │
-   Wireless AP  ─── Router A     Cloud (Internet)     Router B ─── Wireless AP
-                     │
-   Branch B ─────────┘
+- Branch A LAN: 192.168.10.0/24 (gateway 192.168.10.1)
+- Branch B LAN: 192.168.20.0/24 (gateway 192.168.20.1)
+- Packet Tracer WAN: RFC 5737 documentation ranges (see docs/topology.md)
+- AWS: VPC, public/private subnets, Internet Gateway, route tables, restrictive security-group baseline and CloudWatch VPC Flow Logs
+- Optional real VPN: Terraform can create AWS Site-to-Site VPN resources when given the real static public IP and BGP ASN of a compatible customer-gateway device. Packet Tracer itself cannot fulfil this role.
 
-Key Technologies
+## Repository layout
 
-Wireless LAN (WPA2/WPA3)
+- config/: Packet Tracer router, switch, AP and VPN templates
+- docs/: architecture, address plan, security and testing guidance
+- infra/aws/: Terraform AWS network and optional VPN resources
+- reports/: test evidence and issue tracking
+- simulation/: location for user-created .pkt files
+- .github/workflows/: Terraform validation CI
 
-Router-to-Cloud WAN simulation
+## Packet Tracer quick start
 
-IPsec VPN (ISAKMP + IPsec Phase 1 & 2)
+1. Build the topology in docs/topology.md.
+2. Apply matching branch router/switch templates, adjusting interface names for the selected device.
+3. Configure APs with unique lab passphrases. Do not commit real credentials.
+4. Configure IPsec only if the selected simulated router supports the commands.
+5. Run docs/testing-plan.md and save actual evidence under reports/evidence/.
 
-DHCP
+The Packet Tracer WAN ranges are documentation-only and must not be used as real public addresses.
 
-NAT
+## AWS Terraform quick start
 
-VLANs (optional)
+Requirements: Terraform >= 1.5 and AWS credentials configured through a supported profile, environment variables or role.
 
-Static routing / OSPF
+```bash
+cd infra/aws
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform fmt -check
+terraform validate
+terraform plan
+```
 
-📁 Repository Structure
-cloudwavenet/
-│
-├── README.md
-├── diagrams/
-├── docs/
-├── simulation/
-├── config/
-├── src/
-└── reports/
+Review the plan before applying. The default deployment creates a VPC foundation and VPC Flow Logs. It intentionally excludes NAT Gateway, compute instances and billable VPN resources by default.
 
+To include AWS Site-to-Site VPN, set customer_gateway_ip to the real static public IP of a compatible on-premises VPN device. Review the plan; AWS VPN charges apply. Download the vendor-specific configuration from AWS after creation. Never use a Packet Tracer Cloud object as the real customer gateway.
 
-Full folder explanations are inside the repo.
+```bash
+terraform output
+terraform destroy
+```
 
-🧩 Network Topology Overview
-Branch A
-Device	Purpose
-Router A	Manages LAN/WLAN, VPN peer
-Switch A	LAN distribution
-Wireless AP A	WiFi access for clients
-Laptops / PCs	Wireless and wired hosts
-Branch B
+Destroy only disposable lab resources after checking the active workspace.
 
-Same layout as Branch A.
+## Security principles
 
-Cloud
+- No committed passwords, PSKs, tokens or AWS credentials.
+- Private subnet has no default Internet route.
+- Security group has no inbound rules by default.
+- Branch-to-branch traffic must be excluded from Internet NAT.
+- Use IKEv2 and current vendor-recommended settings on real equipment; use AWS-generated configuration for the selected device.
+- Use MFA and least-privilege IAM.
+- Flow Logs contain network metadata; apply retention and access controls.
 
-Simulates ISP/Internet using:
+## Validation
 
-Cloud > "Custom" mode
+GitHub Actions checks Terraform formatting and validation. This does not deploy AWS or prove connectivity. End-to-end tests require the actual Packet Tracer file, compatible edge equipment, AWS account and recorded evidence.
 
-Serial, Ethernet, and DSL connections
+See docs/testing-plan.md, docs/hybrid-cloud-architecture.md and docs/security-analysis.md.
 
-Static routes pointing to WAN subnets
+## Roadmap
 
-🔧 IP Addressing Plan
-WAN (Cloud Internet Simulation)
-Link	Network	Router A	Cloud	Router B
-A ↔ Cloud	100.1.1.0/30	100.1.1.1	100.1.1.2	—
-B ↔ Cloud	100.1.1.4/30	—	100.1.1.6	100.1.1.5
-LAN Networks
-Branch	Network	Gateway
-A	192.168.10.0/24	192.168.10.1
-B	192.168.20.0/24	192.168.20.1
-📶 Wireless Configuration
-Company A Wireless
+1. Complete and capture Packet Tracer branch connectivity.
+2. Validate Terraform in CI and deploy AWS baseline in a controlled account.
+3. Integrate a compatible VPN appliance with AWS Site-to-Site VPN.
+4. Add centralised alerting, drift checks and infrastructure security scanning.
 
-SSID: CompanyA-Secure
+## Licence
 
-Security: WPA2-PSK
-
-Key: StrongPassword123!
-
-Company B Wireless
-
-SSID: CompanyB-Secure
-
-Security: WPA2-PSK
-
-Key: StrongPassword123!
-
-🔒 IPsec VPN Configuration (Summary)
-Phase 1 (ISAKMP)
-crypto isakmp policy 10
- encryption aes
- authentication pre-share
- group 2
- lifetime 86400
-
-Pre-Shared Key
-crypto isakmp key MyComplexKey123 address 100.1.1.5
-
-Phase 2 (IPsec Transform Set)
-crypto ipsec transform-set TRANS1 esp-aes esp-sha-hmac
-
-Crypto Map
-crypto map VPN-MAP 10 ipsec-isakmp
- set peer 100.1.1.5
- set transform-set TRANS1
- match address VPN-TRAFFIC
-
-🧪 Testing Checklist
-1. Verify WLAN
-
-Laptop → Connect to SSID
-
-Ping gateway: ping 192.168.x.1
-
-2. Verify Cloud Routing
-
-Router A ping Router B WAN:
-
-ping 100.1.1.5
-
-3. Verify VPN Tunnel
-show crypto isakmp sa
-show crypto ipsec sa
-
-
-Should show:
-
-QM_IDLE (Phase 2 up)
-
-Increasing packet counters
-
-4. Branch-to-Branch Test
-
-Laptop in Branch A → ping Laptop in Branch B
-Should succeed through encrypted tunnel.
-
-🗂️ Packet Tracer Files Included
-
-Located in:
-simulation/
-
-CloudWaveNET-v1.pkt – Base LAN + Cloud
-
-CloudWaveNET-v2-Wireless.pkt – WLAN added
-
-CloudWaveNET-v3-VPN.pkt – VPN configured
-
-CloudWaveNET-final.pkt – Final project
-
-📘 Documentation
-
-Inside /docs/:
-
-Topology design
-
-Wireless configuration steps
-
-Cloud Internet config
-
-Router configs
-
-Full VPN step-by-step
-
-Security analysis
-
-Testing proof
-
-Conclusion
-
-🧑‍🎓 Who Is This Project For?
-
-Networking students
-
-Cybersecurity students
-
-CCNA learners
-
-Anyone building a strong GitHub portfolio
-
-🏁 Conclusion
-
-CloudWaveNET demonstrates how real companies connect securely over the Internet using cloud infrastructure, Wi-Fi, routing, and encryption.
-This project is designed to showcase professional-level network design and cybersecurity fundamentals.
+No licence is currently declared. Choose terms before inviting reuse.
