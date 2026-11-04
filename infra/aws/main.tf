@@ -2,13 +2,16 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "cloudwavenet-vpc"
+    Name        = "${var.project_name}-vpc"
+    Environment = var.environment
   }
 }
 
@@ -16,7 +19,8 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "cloudwavenet-igw"
+    Name        = "${var.project_name}-igw"
+    Environment = var.environment
   }
 }
 
@@ -27,8 +31,9 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "cloudwavenet-public"
-    Tier = "public"
+    Name        = "${var.project_name}-public"
+    Tier        = "public"
+    Environment = var.environment
   }
 }
 
@@ -38,8 +43,9 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "cloudwavenet-private"
-    Tier = "private"
+    Name        = "${var.project_name}-private"
+    Tier        = "private"
+    Environment = var.environment
   }
 }
 
@@ -52,7 +58,8 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "cloudwavenet-public-rt"
+    Name        = "${var.project_name}-public-rt"
+    Environment = var.environment
   }
 }
 
@@ -65,7 +72,8 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "cloudwavenet-private-rt"
+    Name        = "${var.project_name}-private-rt"
+    Environment = var.environment
   }
 }
 
@@ -75,7 +83,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "baseline" {
-  name        = "cloudwavenet-baseline"
+  name        = "${var.project_name}-baseline"
   description = "No unsolicited inbound traffic; add narrowly scoped rules per workload."
   vpc_id      = aws_vpc.main.id
 
@@ -88,13 +96,18 @@ resource "aws_security_group" "baseline" {
   }
 
   tags = {
-    Name = "cloudwavenet-baseline"
+    Name        = "${var.project_name}-baseline"
+    Environment = var.environment
   }
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow" {
-  name              = "/cloudwavenet/vpc-flow-logs"
+  name              = "/${var.project_name}/vpc-flow-logs"
   retention_in_days = 30
+
+  tags = {
+    Environment = var.environment
+  }
 }
 
 data "aws_iam_policy_document" "flow_logs_assume_role" {
@@ -106,29 +119,52 @@ data "aws_iam_policy_document" "flow_logs_assume_role" {
       type        = "Service"
       identifiers = ["vpc-flow-logs.amazonaws.com"]
     }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc-flow-log/*"]
+    }
   }
 }
 
 resource "aws_iam_role" "flow_logs" {
-  name               = "cloudwavenet-flow-logs"
+  name               = "${var.project_name}-flow-logs"
   assume_role_policy = data.aws_iam_policy_document.flow_logs_assume_role.json
+
+  tags = {
+    Environment = var.environment
+  }
 }
 
 data "aws_iam_policy_document" "flow_logs" {
   statement {
+    sid    = "WriteFlowLogStreams"
     effect = "Allow"
     actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "logs:DescribeLogGroups",
       "logs:DescribeLogStreams"
     ]
+    resources = ["${aws_cloudwatch_log_group.vpc_flow.arn}:*"]
+  }
+
+  statement {
+    sid       = "DescribeLogGroups"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
     resources = ["*"]
   }
 }
 
 resource "aws_iam_role_policy" "flow_logs" {
-  name   = "cloudwavenet-flow-logs"
+  name   = "${var.project_name}-flow-logs"
   role   = aws_iam_role.flow_logs.id
   policy = data.aws_iam_policy_document.flow_logs.json
 }
@@ -147,7 +183,8 @@ resource "aws_vpn_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "cloudwavenet-vgw"
+    Name        = "${var.project_name}-vgw"
+    Environment = var.environment
   }
 }
 
@@ -158,7 +195,8 @@ resource "aws_customer_gateway" "branch" {
   type       = "ipsec.1"
 
   tags = {
-    Name = "cloudwavenet-customer-gateway"
+    Name        = "${var.project_name}-customer-gateway"
+    Environment = var.environment
   }
 }
 
@@ -170,7 +208,8 @@ resource "aws_vpn_connection" "branch" {
   static_routes_only  = false
 
   tags = {
-    Name = "cloudwavenet-site-to-site-vpn"
+    Name        = "${var.project_name}-site-to-site-vpn"
+    Environment = var.environment
   }
 }
 
