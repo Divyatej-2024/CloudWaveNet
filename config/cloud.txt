@@ -1,5 +1,7 @@
-# Cloud routing config (GUI in Packet Tracer)
-
-Static routes:
-- 192.168.10.0/24 via 100.1.1.1
-- 192.168.20.0/24 via 100.1.1.5
+# Packet Tracer simulated ISP routing reference (not AWS)
+# Branch A WAN: 198.51.100.0/30; Router A .1; ISP .2
+# Branch B WAN: 203.0.113.0/30; Router B .1; ISP .2
+# Configure routes on the simulated ISP/router:
+# 192.168.10.0/24 via 198.51.100.1
+# 192.168.20.0/24 via 203.0.113.1
+# Cloud-object routing capability varies by Packet Tracer version.
